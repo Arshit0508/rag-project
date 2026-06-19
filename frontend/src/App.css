@@ -1,0 +1,100 @@
+.app {
+  max-width: 700px;
+  margin: 40px auto;
+  font-family: system-ui, sans-serif;
+  padding: 0 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.upload-section,
+.chat-section {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.status {
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: #444;
+}
+
+.chat-window {
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.empty-state {
+  color: #999;
+  text-align: center;
+  margin-top: 60px;
+}
+
+.message {
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+
+.message.user {
+  color: #1a1a1a;
+}
+
+.message.assistant {
+  color: #0a4d8c;
+}
+
+.sources {
+  margin-top: 6px;
+  font-size: 0.85em;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+
+.source-item {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #ddd;
+}
+
+.loading {
+  color: #888;
+  font-style: italic;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.input-row input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background: #0a4d8c;
+  color: white;
+  cursor: pointer;
+}
+
+button:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
