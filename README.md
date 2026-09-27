@@ -1,143 +1,414 @@
-# RAG Project 🤖
+# 🧠 Intelligent Document RAG System
 
-> A Retrieval-Augmented Generation (RAG) application built from scratch to understand how AI answers questions using your own data.
+> **Upload a document. Ask questions. Get answers grounded in the most relevant parts of your document.**
 
-This project explores the fundamentals of RAG by implementing a custom vector database from the ground up — no third-party vector store like Pinecone or FAISS. It combines OpenAI's language models with a Vite.js frontend for a clean, interactive Q&A experience.
+A full-stack **Retrieval-Augmented Generation (RAG)** application built with **React, Node.js, Express, and Google Gemini**.
 
----
+The system allows users to upload documents and ask natural-language questions about their content. Instead of sending the entire document directly to an LLM, the application first retrieves the most relevant document sections using **embeddings and cosine similarity**, and then provides those sections as context to **Gemini 2.5 Flash** for answer generation.
 
-## What is RAG?
-
-RAG (Retrieval-Augmented Generation) enhances an LLM by giving it relevant context from your own data before generating a response. Instead of relying solely on the model's training data, RAG:
-
-1. **Embeds** your documents into vectors
-2. **Stores** them in a vector database
-3. **Retrieves** the most relevant chunks when a query is made
-4. **Feeds** that context to the LLM to generate a grounded response
-
-```
-User Query → Embed Query → Search Vector DB → Retrieve Context → OpenAI LLM → Answer
-```
+The project implements the core RAG pipeline using a lightweight **JSON-backed vector store**, making the retrieval process transparent and easy to understand.
 
 ---
 
-## Features
+## ✨ Features
 
-- 🧠 **OpenAI powered** — Uses OpenAI embeddings and GPT for generation
-- 🗄️ **Custom vector database** — Built from scratch to understand how vector search works under the hood
-- ⚡ **Vite.js frontend** — Fast, modern UI for querying the RAG pipeline
-- 📄 **Document ingestion** — Load and embed your own documents
-- 🔍 **Semantic search** — Finds the most relevant context using cosine similarity
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Vite.js |
-| LLM & Embeddings | OpenAI API |
-| Vector Database | Custom (built from scratch) |
-| Language | JavaScript / Python |
+- 📄 **Document Upload** — Upload documents through a simple web interface
+- ✂️ **Text Chunking** — Splits documents into overlapping chunks
+- 🧠 **Embeddings** — Generates semantic embeddings using `gemini-embedding-001`
+- 🔎 **Semantic Search** — Retrieves relevant chunks using cosine similarity
+- 🗄️ **Custom Vector Store** — Stores embeddings in a JSON-backed vector store
+- 🎯 **Top-K Retrieval** — Selects the most relevant document chunks
+- 🤖 **Gemini Generation** — Uses Gemini 2.5 Flash to generate answers
+- 🛡️ **Grounded Responses** — Provides retrieved document context to the LLM
+- 📚 **Source Retrieval** — Returns retrieved chunks and similarity scores
+- ⚛️ **React Frontend** — Interactive document Q&A interface
+- 🔌 **REST API** — Separate frontend and backend architecture
 
 ---
 
-## Getting Started
+# 🏗️ Architecture
 
-### Prerequisites
+The system consists of two main pipelines.
 
-- Node.js (v18+)
-- An OpenAI API key
+## 📥 Document Ingestion
 
-### Installation
+```text
+                ┌──────────────────┐
+                │  Upload Document │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │  Extract Text    │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │     Chunking     │
+                │ 150 words        │
+                │ 30 word overlap  │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │ Gemini Embedding │
+                │ gemini-embedding │
+                │      -001        │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │   Vector Store   │
+                │   vectors.json   │
+                └──────────────────┘
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/Arshit0508/rag-project.git
-   cd rag-project
-   ```
+                                ┌──────────────────┐
+                │  User Question   │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │ Question         │
+                │ Embedding        │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │ Cosine Similarity│
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │ Top-K Relevant   │
+                │     Chunks       │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │ Grounded Prompt  │
+                │ + Retrieved      │
+                │    Context       │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │ Gemini 2.5 Flash │
+                └────────┬─────────┘
+                         ↓
+                ┌──────────────────┐
+                │ Answer + Sources │
+                └──────────────────┘
 
-2. **Install frontend dependencies**
-   ```bash
-   npm install
-   ```
+                                         DOCUMENT
+                            │
+                            ▼
+                     ┌─────────────┐
+                     │   Chunking  │
+                     └──────┬──────┘
+                            ▼
+                     ┌─────────────┐
+                     │  Embedding  │
+                     └──────┬──────┘
+                            ▼
+                     ┌─────────────┐
+                     │Vector Store │
+                     └──────┬──────┘
+                            │
+                            │
+                  ┌─────────▼─────────┐
+                  │    USER QUERY     │
+                  └─────────┬─────────┘
+                            ▼
+                     ┌─────────────┐
+                     │   Query     │
+                     │  Embedding  │
+                     └──────┬──────┘
+                            ▼
+                     ┌─────────────┐
+                     │   Cosine    │
+                     │ Similarity  │
+                     └──────┬──────┘
+                            ▼
+                     ┌─────────────┐
+                     │   Top-K     │
+                     │  Retrieval  │
+                     └──────┬──────┘
+                            ▼
+                     ┌─────────────┐
+                     │   Grounded  │
+                     │   Prompt    │
+                     └──────┬──────┘
+                            ▼
+                     ┌─────────────┐
+                     │   Gemini    │
+                     │ 2.5 Flash   │
+                     └──────┬──────┘
+                            ▼
+                     ┌─────────────┐
+                     │   Answer    │
+                     │ + Sources   │
+                     └─────────────┘
 
-3. **Set up your environment variables**
-   ```bash
-   cp .env.example .env
-   ```
-   Add your OpenAI API key to `.env`:
-   ```
-   VITE_OPENAI_API_KEY=your-openai-api-key
-   ```
+                     🧠 Why RAG?
 
-4. **Run the development server**
-   ```bash
-   npm run dev
-   ```
+A basic LLM application follows:
 
-5. **Open in browser**
-   ```
-   http://localhost:5173
-   ```
+Question → LLM → Answer
 
----
+For document-based question answering, sending an entire document to the model can introduce unnecessary context.
 
-## How It Works
+RAG adds a retrieval stage:
 
-### 1. Document Ingestion
-Documents are split into chunks and each chunk is converted into a vector embedding using OpenAI's `text-embedding` model.
+Question
+   ↓
+Find relevant information
+   ↓
+Provide relevant context to LLM
+   ↓
+Generate answer
 
-### 2. Custom Vector Store
-Embeddings are stored in a custom-built in-memory vector database. Similarity search is performed using **cosine similarity** — no external library needed.
+This allows the system to work with external, private, and domain-specific information without retraining the language model.
 
-### 3. Query & Retrieval
-When a user asks a question, it's embedded using the same model. The top-N most similar document chunks are retrieved from the vector store.
-
-### 4. Generation
-The retrieved chunks are passed as context to OpenAI's GPT model, which generates a relevant, grounded answer.
-
----
-
-## Project Structure
-
-```
+🛠️ Tech Stack
+Layer	Technology
+Frontend	React
+Build Tool	Vite
+Backend	Node.js
+Web Framework	Express.js
+LLM	Google Gemini 2.5 Flash
+Embeddings	Gemini Embedding API
+Vector Store	Custom JSON-backed store
+Retrieval	Cosine Similarity
+File Upload	Multer
+Communication	REST API
+Language	JavaScript
+📁 Project Structure
 rag-project/
-├── src/
-│   ├── vectorStore.js     # Custom vector database implementation
-│   ├── embeddings.js      # OpenAI embedding logic
-│   ├── retriever.js       # Similarity search & retrieval
-│   ├── generator.js       # OpenAI GPT response generation
-│   └── App.jsx            # Vite.js frontend
-├── data/                  # Your documents go here
-├── .env.example
-├── package.json
-└── vite.config.js
-```
+│
+├── backend/
+│   │
+│   ├── routes/
+│   │   ├── upload.js
+│   │   └── chat.js
+│   │
+│   ├── services/
+│   │   ├── chunker.js
+│   │   ├── embeddings.js
+│   │   ├── vectorStore.js
+│   │   └── rag.js
+│   │
+│   ├── data/
+│   │   └── vectors.json
+│   │
+│   ├── server.js
+│   └── package.json
+│
+├── frontend/
+│   │
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── index.css
+│   │   └── main.jsx
+│   │
+│   └── package.json
+│
+└── README.md
+🔬 Core Components
+1. Text Chunking
 
----
+Documents are divided into smaller overlapping chunks before generating embeddings.
 
-## Key Learning Outcomes
+The current implementation uses:
 
-- How vector embeddings represent text semantically
-- How cosine similarity is used to find related content
-- How to build a minimal vector store without external tools
-- How RAG connects retrieval and generation into one pipeline
+Chunk Size  → 150 words
+Overlap     → 30 words
+Step Size   → 120 words
 
----
+For example:
 
-## Contributing
+Chunk 1 → words 1 - 150
+Chunk 2 → words 121 - 270
+Chunk 3 → words 241 - 390
 
-Contributions and improvements are welcome!
+The overlap helps preserve context when information spans across chunk boundaries.
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -m 'Add some feature'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a Pull Request
+2. Embeddings
 
----
+Each document chunk is converted into a numerical vector using:
 
-## License
+gemini-embedding-001
 
-This project is open source. See [LICENSE](LICENSE) for details.
+The user's question is embedded using the same embedding model.
+
+This allows the system to compare:
+
+Question Embedding
+        ↕
+Document Chunk Embedding
+
+based on semantic similarity rather than exact keyword matching.
+
+3. Vector Store
+
+Instead of relying on an external vector database, the project uses a lightweight JSON-backed vector store:
+
+backend/data/vectors.json
+
+Each stored record contains information such as:
+
+{
+  "id": 0,
+  "text": "document chunk...",
+  "embedding": [0.012, -0.031, "..."],
+  "source": "document.txt"
+}
+
+This approach keeps the implementation simple while exposing the underlying mechanics of vector retrieval.
+
+4. Cosine Similarity
+
+The system measures similarity between the question vector and document vectors using cosine similarity.
+
+                 A · B
+cos(A,B) = ─────────────────
+           |A| × |B|
+
+Where:
+
+A = question embedding
+B = document chunk embedding
+A · B = dot product
+|A| and |B| = vector magnitudes
+
+A higher cosine similarity indicates greater similarity between the two vector representations.
+
+5. Top-K Retrieval
+
+For every question, the system:
+
+Generates an embedding for the question.
+Compares it against stored document embeddings.
+Calculates cosine similarity.
+Sorts the results by similarity.
+Selects the most relevant chunks.
+
+The current implementation retrieves the Top 4 chunks by default.
+
+These chunks are then provided to Gemini as context.
+
+6. Grounded Generation
+
+The retrieved chunks are inserted into a structured prompt before being sent to Gemini 2.5 Flash.
+
+The model is instructed to:
+
+Use the provided document context.
+Avoid inventing unsupported information.
+Indicate when the available context is insufficient.
+
+The response contains:
+
+Answer
++
+Retrieved Sources
++
+Similarity Scores
+
+This makes the retrieval stage visible and allows users to see the document context behind the generated response.
+
+🔌 API
+
+The backend exposes two primary endpoints.
+
+Upload Document
+POST /upload
+Content-Type: multipart/form-data
+
+Form field:
+
+file
+
+Processing flow:
+
+Upload
+  ↓
+Read
+  ↓
+Chunk
+  ↓
+Embed
+  ↓
+Store
+Ask a Question
+POST /chat
+Content-Type: application/json
+
+Request:
+
+{
+  "question": "What does the document say about the leave policy?"
+}
+
+Response:
+
+{
+  "answer": "...",
+  "sources": [
+    {
+      "text": "...",
+      "score": 0.82,
+      "source": "document.txt"
+    }
+  ]
+}
+⚙️ Getting Started
+Prerequisites
+Node.js 18+
+npm
+Google Gemini API key
+1. Clone the Repository
+git clone https://github.com/Arshit0508/rag-project.git
+
+cd rag-project
+2. Setup Backend
+cd backend
+
+npm install
+
+Create a .env file inside the backend directory:
+
+GEMINI_API_KEY=your_gemini_api_key
+PORT=5000
+
+Start the backend:
+
+node server.js
+
+The backend will run on:
+
+http://localhost:5000
+3. Setup Frontend
+
+Open another terminal:
+
+cd frontend
+
+npm install
+
+npm run dev
+
+Vite will provide a local development URL, typically:
+
+http://localhost:5173
+
+Open the URL in your browser.
+
+🎯 Project Summary
+
+Intelligent Document RAG System is a full-stack application that combines semantic retrieval with LLM-based generation to answer questions from uploaded documents. Documents are split into overlapping chunks, embedded using Gemini, stored in a custom vector store, and searched using cosine similarity. The most relevant chunks are then provided to Gemini 2.5 Flash as context to generate grounded answers along with their retrieved sources.**
+
+👨‍💻 Author
+
+Arshit
+Computer Science Undergraduate — NIT Jalandhar
+
+Built as a hands-on exploration of:
+
+RAG
+Embeddings
+Semantic Search
+Vector Retrieval
+LLM Applications
+Backend Engineering
